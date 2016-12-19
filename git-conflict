@@ -1,0 +1,33 @@
+#!/bin/bash
+
+PS3="[select git command]> "
+
+conflict_files=( $(git status -s | awk '$1~"U"{print $2}') )
+
+for file in "${conflict_files[@]}"
+do
+    ${EDITOR:?} "$file"
+    select item in "add" "rm" "etc"
+    do
+        if [[ -z $item ]]; then
+            break
+        fi
+        case "$item" in
+            "")
+                echo "Do nothing"
+                exit 0
+                ;;
+            etc)
+                read cmd
+                if [[ -n $cmd ]]; then
+                    git $cmd "$file"
+                fi
+                break
+                ;;
+            *)
+                git "$item" "$file"
+                break
+                ;;
+        esac
+    done
+done
